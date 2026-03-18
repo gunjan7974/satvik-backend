@@ -1,0 +1,48 @@
+const EventBooking = require("../models/EventBooking");
+const EventType = require("../models/EventType");
+const PartyHall = require("../models/PartyHall");
+const ExtraService = require("../models/ExtraService");
+
+exports.createEventBooking = async (req, res) => {
+  try {
+    const {
+      eventType,
+      partyHall,
+      extraServices,
+      contactName,
+      contactPhone,
+      eventDate,
+    } = req.body;
+
+    const eventTypeData = await EventType.findById(eventType);
+    const hallData = await PartyHall.findById(partyHall);
+    const servicesData = await ExtraService.find({
+      _id: { $in: extraServices },
+    });
+
+    if (!eventTypeData || !hallData) {
+      return res.status(400).json({ message: "Invalid data" });
+    }
+
+    let totalCost =
+      eventTypeData.basePrice +
+      hallData.price +
+      servicesData.reduce((sum, s) => sum + s.price, 0);
+
+    const booking = await EventBooking.create({
+      user: req.user._id,
+      eventType,
+      partyHall,
+      extraServices,
+      contactName,
+      contactPhone,
+      eventDate,
+      totalCost,
+    });
+
+    res.status(201).json(booking);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
