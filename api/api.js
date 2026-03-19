@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://192.168.29.43:5000/api",
+  baseURL: "https://sattvik.hemkumar.cloud/api",
 });
 
 export default API;
