@@ -6,6 +6,7 @@ const orderSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+      index: true,
     },
 
     orderItems: [
@@ -35,7 +36,7 @@ const orderSchema = mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["Pending", "Preparing", "Delivered", "Cancelled"],
+      enum: ["Pending", "Preparing", "On the way", "Delivered", "Cancelled"],
       default: "Pending",
     },
   },

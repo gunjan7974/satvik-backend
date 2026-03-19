@@ -102,22 +102,13 @@ exports.createOrder = async (req, res) => {
   }
 };
 
-// 🟢 Get My Orders
+// 🟢 Get All Orders (Admin)
 exports.getAllOrders = async (req, res) => {
   try {
-    // 🔥 Check if user is authenticated
-    if (!req.user || !req.user._id) {
-      return res.status(401).json({ 
-        success: false,
-        message: "Authentication required. Please login to view orders." 
-      });
-    }
-
-    const orders = await Order.find({
-      user: req.user._id
-    })
+    const orders = await Order.find()
+      .populate("user", "name email phone")
       .populate("orderItems.food")
-      .sort({ createdAt: -1 });   // 🔥 newest order first
+      .sort({ createdAt: -1 });
 
     res.json({
       success: true,
@@ -125,7 +116,7 @@ exports.getAllOrders = async (req, res) => {
     });
 
   } catch (error) {
-    console.log("GET MY ORDERS ERROR:", error);
+    console.log("GET ALL ORDERS ERROR:", error);
     res.status(500).json({ 
       success: false,
       message: "Server Error" 
@@ -165,21 +156,7 @@ exports.getMyOrders = async (req, res) => {
 // 🟢 Admin - Update Order Status
 exports.updateOrderStatus = async (req, res) => {
   try {
-    // 🔥 Check if user is authenticated
-    if (!req.user || !req.user._id) {
-      return res.status(401).json({ 
-        success: false,
-        message: "Authentication required" 
-      });
-    }
-
-    // 🔥 Optional: Check if user is admin
-    // if (req.user.role !== 'admin') {
-    //   return res.status(403).json({ 
-    //     success: false,
-    //     message: "Admin access required" 
-    //   });
-    // }
+    // Route handles protect & admin middleware
 
     const order = await Order.findById(req.params.id);
 

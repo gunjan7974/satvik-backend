@@ -1,35 +1,37 @@
 const Food = require("../models/Food");
 
 // GET all foods
-exports.getFoods = async (req, res) => {
+exports.getFoods = async (req, res, next) => {
   try {
     const foods = await Food.find();
     res.json(foods);
   } catch (error) {
-    res.status(500).json({ message: "Server Error" });
+    next(error);
   }
 };
 
 // GET single food
-exports.getFoodById = async (req, res) => {
+exports.getFoodById = async (req, res, next) => {
   try {
     const food = await Food.findById(req.params.id);
 
     if (!food) {
-      return res.status(404).json({ message: "Food not found" });
+      res.status(404);
+      throw new Error("Food not found");
     }
 
     res.json(food);
   } catch (error) {
-    res.status(500).json({ message: "Server Error" });
+    next(error);
   }
 };
-exports.updateFood = async (req, res) => {
+exports.updateFood = async (req, res, next) => {
   try {
     const food = await Food.findById(req.params.id);
 
     if (!food) {
-      return res.status(404).json({ message: "Food not found" });
+      res.status(404);
+      throw new Error("Food not found");
     }
 
     food.name = req.body.name || food.name;
@@ -42,29 +44,30 @@ exports.updateFood = async (req, res) => {
 
     res.json(updatedFood);
   } catch (error) {
-    res.status(500).json({ message: "Server Error" });
+    next(error);
   }
 };
-exports.deleteFood = async (req, res) => {
+exports.deleteFood = async (req, res, next) => {
   try {
     const food = await Food.findById(req.params.id);
 
     if (!food) {
-      return res.status(404).json({ message: "Food not found" });
+      res.status(404);
+      throw new Error("Food not found");
     }
 
     await food.deleteOne();
 
     res.json({ message: "Food deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Server Error" });
+    next(error);
   }
 };
 
 
 // POST add food
-exports.addFood = async (req, res) => {
-  const { name, price, image, description, category } = req.body;
+exports.addFood = async (req, res, next) => {
+  const { name, price, image, description, category, eventType } = req.body;
 
   try {
     const food = await Food.create({
@@ -73,10 +76,11 @@ exports.addFood = async (req, res) => {
       image,
       description,
       category,
+      eventType
     });
 
     res.status(201).json(food);
   } catch (error) {
-    res.status(500).json({ message: "Server Error" });
+    next(error);
   }
 };
