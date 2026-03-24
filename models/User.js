@@ -6,28 +6,49 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+
     email: {
       type: String,
       required: true,
       unique: true,
     },
+
     password: {
       type: String,
       required: true,
     },
-    phone: {          // ✅ ADD THIS
+
+    phone: {
       type: String,
     },
+
     avatar: {
       type: String,
     },
+
     walletBalance: {
       type: Number,
       default: 0,
     },
+
+    // ✅ ADD ROLE
+    role: {
+      type: String,
+      enum: ["user", "vendor", "admin"],
+      default: "user",
+    },
+
+    // ✅ VENDOR INFO
+    vendorInfo: {
+      businessName: String,
+      businessAddress: String,
+      phone: String,
+      description: String,
+    },
+
     isAdmin: {
       type: Boolean,
-      default: false
+      default: false,
     },
   },
   { timestamps: true }

@@ -7,23 +7,31 @@ const generateToken = require("../utils/generateToken");
 // REGISTER USER
 // =========================
 exports.registerUser = async (req, res) => {
-  const { name, email, password, phone } = req.body;
+  const { name, email, password, phone, role, vendorInfo } = req.body;
 
   try {
-
     const userExists = await User.findOne({ email });
 
     if (userExists) {
       return res.status(400).json({ message: "User already exists" });
     }
 
+    // ✅ Vendor validation
+    if (role === "vendor" && !vendorInfo?.businessName) {
+      return res.status(400).json({
+        message: "Business name is required for vendor"
+      });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
       name,
-      email,
+      email: email.toLowerCase(),
       password: hashedPassword,
-      phone
+      phone,
+      role: role || "user",
+      ...(role === "vendor" && { vendorInfo }),
     });
 
     res.status(201).json({
@@ -31,7 +39,8 @@ exports.registerUser = async (req, res) => {
       name: user.name,
       email: user.email,
       phone: user.phone,
-      token: generateToken(user._id)
+      role: user.role,
+      token: generateToken(user._id),
     });
 
   } catch (error) {
@@ -45,11 +54,9 @@ exports.registerUser = async (req, res) => {
 // LOGIN USER
 // =========================
 exports.loginUser = async (req, res) => {
-
   const { email, password } = req.body;
 
   try {
-
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -67,8 +74,9 @@ exports.loginUser = async (req, res) => {
       name: user.name,
       email: user.email,
       phone: user.phone,
+      role: user.role,
       walletBalance: user.walletBalance || 0,
-      token: generateToken(user._id)
+      token: generateToken(user._id),
     });
 
   } catch (error) {
@@ -82,9 +90,7 @@ exports.loginUser = async (req, res) => {
 // GET PROFILE
 // =========================
 exports.getProfile = async (req, res) => {
-
   try {
-
     const user = await User.findById(req.user._id).select("-password");
 
     if (!user) {
@@ -104,9 +110,7 @@ exports.getProfile = async (req, res) => {
 // UPDATE PROFILE
 // =========================
 exports.updateProfile = async (req, res) => {
-
   try {
-
     const user = await User.findById(req.user._id);
 
     if (!user) {
@@ -128,8 +132,8 @@ exports.updateProfile = async (req, res) => {
       name: updatedUser.name,
       email: updatedUser.email,
       phone: updatedUser.phone,
-      walletBalance: updatedUser.walletBalance || 0,
-      token: generateToken(updatedUser._id)
+      role: updatedUser.role,
+      token: generateToken(updatedUser._id),
     });
 
   } catch (error) {
@@ -143,14 +147,8 @@ exports.updateProfile = async (req, res) => {
 // CHANGE PASSWORD
 // =========================
 exports.changePassword = async (req, res) => {
-
   try {
-
     const user = await User.findById(req.user._id);
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
 
     const { currentPassword, newPassword } = req.body;
 
@@ -158,17 +156,14 @@ exports.changePassword = async (req, res) => {
 
     if (!isMatch) {
       return res.status(400).json({
-        message: "Current password is incorrect"
+        message: "Current password is incorrect",
       });
     }
 
     user.password = await bcrypt.hash(newPassword, 10);
-
     await user.save();
 
-    res.json({
-      message: "Password changed successfully"
-    });
+    res.json({ message: "Password changed successfully" });
 
   } catch (error) {
     console.log("CHANGE PASSWORD ERROR:", error);
@@ -178,73 +173,47 @@ exports.changePassword = async (req, res) => {
 
 
 // =========================
-// 👑 Get All Users (Admin)
+// 👑 GET ALL USERS
 // =========================
 exports.getAllUsers = async (req, res) => {
-
-  try {
-
-    const users = await User.find().select("-password");
-
-    res.json(users);
-
-  } catch (error) {
-    console.log("GET USERS ERROR:", error);
-    res.status(500).json({ message: "Server Error" });
-  }
+  const users = await User.find().select("-password");
+  res.json(users);
 };
 
 
 // =========================
-// 🗑 Delete User (Admin)
+// 🗑 DELETE USER
 // =========================
 exports.deleteUser = async (req, res) => {
+  const user = await User.findById(req.params.id);
 
-  try {
-
-    const user = await User.findById(req.params.id);
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    await user.deleteOne();
-
-    res.json({ message: "User removed successfully" });
-
-  } catch (error) {
-    console.log("DELETE USER ERROR:", error);
-    res.status(500).json({ message: "Server Error" });
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
   }
+
+  await user.deleteOne();
+  res.json({ message: "User removed successfully" });
 };
 
 
 // =========================
-// 🔄 Update User Role (Admin)
+// 🔄 UPDATE USER ROLE
 // =========================
 exports.updateUserRole = async (req, res) => {
+  const user = await User.findById(req.params.id);
 
-  try {
-
-    const user = await User.findById(req.params.id);
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    user.isAdmin = req.body.isAdmin;
-
-    const updatedUser = await user.save();
-
-    res.json({
-      _id: updatedUser._id,
-      name: updatedUser.name,
-      email: updatedUser.email,
-      isAdmin: updatedUser.isAdmin
-    });
-
-  } catch (error) {
-    console.log("UPDATE USER ROLE ERROR:", error);
-    res.status(500).json({ message: "Server Error" });
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
   }
+
+  user.role = req.body.role; // ✅ FIXED
+
+  const updatedUser = await user.save();
+
+  res.json({
+    _id: updatedUser._id,
+    name: updatedUser.name,
+    email: updatedUser.email,
+    role: updatedUser.role,
+  });
 };

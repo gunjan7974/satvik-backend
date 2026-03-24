@@ -86,6 +86,7 @@ exports.loginUser = async (req, res) => {
       name: user.name,
       email: user.email,
       phone: user.phone,
+      role: user.role, // ✅ ADD THIS
       walletBalance: user.walletBalance || 0,
       avatar: user.avatar || "",
       token: generateToken(user._id),

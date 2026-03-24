@@ -32,6 +32,7 @@ app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/cart", require("./routes/cartRoutes"));
 app.use("/api/orders", require("./routes/orderRoutes"));
 app.use("/api/events", require("./routes/eventRoutes"));
+app.use("/api/categories", require("./routes/categoryRoutes"));
 
 app.get("/", (req, res) => {
   res.send("API Running Securely...");
