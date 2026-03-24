@@ -41,12 +41,17 @@ exports.registerUser = async (req, res) => {
     });
 
     res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      walletBalance: user.walletBalance || 0,
-      avatar: user.avatar || "",
+      success: true,
+      message: "User registered successfully",
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        walletBalance: user.walletBalance || 0,
+        avatar: user.avatar || "",
+      },
       token: generateToken(user._id),
     });
 
@@ -82,13 +87,17 @@ exports.loginUser = async (req, res) => {
     }
 
     res.status(200).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      role: user.role, // ✅ ADD THIS
-      walletBalance: user.walletBalance || 0,
-      avatar: user.avatar || "",
+      success: true,
+      message: "Login successful",
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        walletBalance: user.walletBalance || 0,
+        avatar: user.avatar || "",
+      },
       token: generateToken(user._id),
     });
 
@@ -113,13 +122,17 @@ exports.getUserProfile = async (req, res) => {
     }
 
     res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      walletBalance: user.walletBalance || 0,
-      isAdmin: user.isAdmin,
-      avatar: user.avatar || "",
+      success: true,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        walletBalance: user.walletBalance || 0,
+        role: user.role,
+        isAdmin: user.isAdmin,
+        avatar: user.avatar || "",
+      },
     });
 
   } catch (error) {
@@ -164,12 +177,17 @@ exports.updateProfile = async (req, res) => {
     const updatedUser = await user.save();
 
     res.status(200).json({
-      _id: updatedUser._id,
-      name: updatedUser.name,
-      email: updatedUser.email,
-      phone: updatedUser.phone,
-      walletBalance: updatedUser.walletBalance || 0,
-      avatar: updatedUser.avatar || "",
+      success: true,
+      message: "Profile updated successfully",
+      user: {
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        phone: updatedUser.phone,
+        role: updatedUser.role,
+        walletBalance: updatedUser.walletBalance || 0,
+        avatar: updatedUser.avatar || "",
+      },
       token: generateToken(updatedUser._id),
     });
 

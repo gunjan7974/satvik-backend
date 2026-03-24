@@ -69,15 +69,16 @@ exports.loginUser = async (req, res) => {
       return res.status(401).json({ message: "Invalid password" });
     }
 
-    res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      role: user.role,
-      walletBalance: user.walletBalance || 0,
-      token: generateToken(user._id),
-    });
+    res.status(201).json({
+  success: true, // ✅ ADD THIS LINE
+  message: "User registered successfully",
+  _id: user._id,
+  name: user.name,
+  email: user.email,
+  phone: user.phone,
+  role: user.role,
+  token: generateToken(user._id),
+});
 
   } catch (error) {
     console.log("LOGIN ERROR:", error);
