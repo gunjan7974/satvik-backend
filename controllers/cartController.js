@@ -135,3 +135,16 @@ exports.removeFromCart = async (req, res, next) => {
     next(error);
   }
 };
+
+// 🛒 Get All Carts (Admin Only)
+exports.getAllCarts = async (req, res, next) => {
+  try {
+    const carts = await Cart.find()
+      .populate("user", "name email phone")
+      .populate("items.food");
+
+    res.json(carts);
+  } catch (error) {
+    next(error);
+  }
+};

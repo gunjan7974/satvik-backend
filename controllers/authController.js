@@ -7,7 +7,7 @@ const generateToken = require("../utils/generateToken");
 // =========================
 exports.registerUser = async (req, res) => {
   try {
-    let { name, email, password, phone } = req.body;
+    let { name, email, password, phone, role, vendorInfo } = req.body;
 
     if (!name || !email || !password || !phone) {
       return res.status(400).json({
@@ -38,8 +38,11 @@ exports.registerUser = async (req, res) => {
       email,
       password: hashedPassword,
       phone,
+      role: role || "user",
+      vendorInfo: role === "vendor" ? vendorInfo : undefined,
     });
 
+    console.log("CREATED USER ID:", user._id);
     res.status(201).json({
       success: true,
       message: "User registered successfully",
@@ -113,7 +116,9 @@ exports.loginUser = async (req, res) => {
 exports.getUserProfile = async (req, res) => {
   try {
 
+    console.log("GETTING PROFILE FOR USER ID:", req.user._id);
     const user = await User.findById(req.user._id).select("-password");
+    console.log("USER FOUND IN HANDLER:", user ? user._id : "NOT FOUND");
 
     if (!user) {
       return res.status(404).json({

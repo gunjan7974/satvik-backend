@@ -3,12 +3,18 @@ const router = express.Router();
 
 const {
   getCategories,
-  createCategory
+  createCategory,
+  getCategoryById,
+  updateCategory,
+  deleteCategory
 } = require("../controllers/categoryController");
 
-const upload = require("../middleware/upload"); // ✅ add
+const upload = require("../middleware/upload");
 
 router.get("/", getCategories);
-router.post("/", upload.single("image"), createCategory); // ✅ change
+router.get("/:id", getCategoryById);
+router.post("/", upload.single("image"), createCategory);
+router.put("/:id", upload.single("image"), updateCategory);
+router.delete("/:id", deleteCategory);
 
 module.exports = router;

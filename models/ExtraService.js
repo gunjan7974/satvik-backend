@@ -9,6 +9,14 @@ const extraServiceSchema = mongoose.Schema({
     type: Number,
     required: true,
   },
-});
+  unit: {
+    type: String,
+    enum: ["fixed", "per_guest", "per_hour"],
+    default: "fixed",
+  },
+  image: {
+    type: String,
+  }
+}, { timestamps: true });
 
 module.exports = mongoose.model("ExtraService", extraServiceSchema);

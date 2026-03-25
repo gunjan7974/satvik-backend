@@ -124,7 +124,7 @@ exports.getAllOrders = async (req, res) => {
   }
 };  
 
-// 🟢 Get My Orders (Duplicate function - rename this)
+// 🟢 Get My Orders
 exports.getMyOrders = async (req, res) => {
   try {
     // 🔥 Check if user is authenticated
@@ -156,8 +156,6 @@ exports.getMyOrders = async (req, res) => {
 // 🟢 Admin - Update Order Status
 exports.updateOrderStatus = async (req, res) => {
   try {
-    // Route handles protect & admin middleware
-
     const order = await Order.findById(req.params.id);
 
     if (!order) {
@@ -177,7 +175,6 @@ exports.updateOrderStatus = async (req, res) => {
     }
 
     order.status = req.body.status || order.status;
-
     const updatedOrder = await order.save();
 
     res.json({
@@ -187,6 +184,33 @@ exports.updateOrderStatus = async (req, res) => {
     });
   } catch (error) {
     console.log("UPDATE STATUS ERROR:", error);
+    res.status(500).json({ 
+      success: false,
+      message: "Server Error" 
+    });
+  }
+};
+
+// 🟢 Admin - Delete Order
+exports.deleteOrder = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ 
+        success: false,
+        message: "Order not found" 
+      });
+    }
+
+    await order.deleteOne();
+
+    res.json({
+      success: true,
+      message: "Order deleted successfully"
+    });
+  } catch (error) {
+    console.log("DELETE ORDER ERROR:", error);
     res.status(500).json({ 
       success: false,
       message: "Server Error" 

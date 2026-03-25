@@ -19,12 +19,15 @@ const foodSchema = mongoose.Schema(
     category: {
       type: String,
     },
-
-    // ✅ NEW FIELD (Add this)
+    isAvailable: {
+      type: Boolean,
+      default: true,
+    },
+    // Required false since not all items might belong to an event
     eventType: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "EventType",
-      required: true,
+      required: false,
     },
   },
   { timestamps: true }

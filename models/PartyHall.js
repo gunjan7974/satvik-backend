@@ -5,11 +5,21 @@ const partyHallSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  capacity: Number,
-  price: {
+  capacity: {
     type: Number,
     required: true,
   },
-});
+  pricePerPlate: {
+    type: Number,
+    required: true,
+  },
+  isAvailable: {
+    type: Boolean,
+    default: true,
+  },
+  image: {
+    type: String,
+  }
+}, { timestamps: true });
 
 module.exports = mongoose.model("PartyHall", partyHallSchema);

@@ -1,14 +1,17 @@
 const express = require("express");
 const router = express.Router();
 
-const { protect } = require("../middleware/authMiddleware");
 const { 
   addToCart, 
   getMyCart, 
   removeFromCart,
-  updateQuantity
+  updateQuantity,
+  getAllCarts
 } = require("../controllers/cartController");
 
+const { protect, admin } = require("../middleware/authMiddleware");
+
+router.get("/all", protect, admin, getAllCarts);
 router.put("/:foodId", protect, updateQuantity);
 
 
