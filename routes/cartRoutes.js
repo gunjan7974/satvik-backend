@@ -6,7 +6,8 @@ const {
   getMyCart, 
   removeFromCart,
   updateQuantity,
-  getAllCarts
+  getAllCarts,
+  clearCart
 } = require("../controllers/cartController");
 
 const { protect, admin } = require("../middleware/authMiddleware");
@@ -17,7 +18,7 @@ router.put("/:foodId", protect, updateQuantity);
 
 
 router.delete("/:foodId", protect, removeFromCart);
-
+router.delete("/", protect, clearCart);
 router.post("/", protect, addToCart);
 router.get("/", protect, getMyCart);
 

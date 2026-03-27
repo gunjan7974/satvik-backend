@@ -136,6 +136,20 @@ exports.removeFromCart = async (req, res, next) => {
   }
 };
 
+// 🧹 Clear Cart
+exports.clearCart = async (req, res, next) => {
+  try {
+    const cart = await Cart.findOne({ user: req.user._id });
+    if (cart) {
+      cart.items = [];
+      await cart.save();
+    }
+    res.status(200).json({ success: true, message: "Cart cleared" });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // 🛒 Get All Carts (Admin Only)
 exports.getAllCarts = async (req, res, next) => {
   try {
