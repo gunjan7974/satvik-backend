@@ -42,7 +42,7 @@ exports.addToCart = async (req, res, next) => {
       await cart.save();
     }
 
-    res.status(200).json(cart);
+    res.status(200).json({ success: true, cart });
 
   } catch (error) {
     next(error);
@@ -91,7 +91,7 @@ exports.updateQuantity = async (req, res, next) => {
     }
 
     await cart.save();
-    res.json(cart);
+    res.json({ success: true, cart });
 
   } catch (error) {
     next(error);
@@ -104,7 +104,7 @@ exports.getMyCart = async (req, res, next) => {
     const cart = await Cart.findOne({ user: req.user._id })
       .populate("items.food");
 
-    res.json(cart || { items: [] });
+    res.json({ success: true, cart: cart || { items: [] } });
   } catch (error) {
     next(error);
   }

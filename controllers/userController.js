@@ -35,11 +35,15 @@ exports.registerUser = async (req, res) => {
     });
 
     res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      role: user.role,
+      success: true,
+      message: "User registered successfully",
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+      },
       token: generateToken(user._id),
     });
 
@@ -69,16 +73,18 @@ exports.loginUser = async (req, res) => {
       return res.status(401).json({ message: "Invalid password" });
     }
 
-    res.status(201).json({
-  success: true, // ✅ ADD THIS LINE
-  message: "User registered successfully",
-  _id: user._id,
-  name: user.name,
-  email: user.email,
-  phone: user.phone,
-  role: user.role,
-  token: generateToken(user._id),
-});
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+      },
+      token: generateToken(user._id),
+    });
 
   } catch (error) {
     console.log("LOGIN ERROR:", error);
@@ -98,7 +104,10 @@ exports.getProfile = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res.json(user);
+    res.json({
+      success: true,
+      user
+    });
 
   } catch (error) {
     console.log("PROFILE ERROR:", error);
@@ -129,11 +138,15 @@ exports.updateProfile = async (req, res) => {
     const updatedUser = await user.save();
 
     res.json({
-      _id: updatedUser._id,
-      name: updatedUser.name,
-      email: updatedUser.email,
-      phone: updatedUser.phone,
-      role: updatedUser.role,
+      success: true,
+      message: "Profile updated successfully",
+      user: {
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        phone: updatedUser.phone,
+        role: updatedUser.role,
+      },
       token: generateToken(updatedUser._id),
     });
 
@@ -164,7 +177,7 @@ exports.changePassword = async (req, res) => {
     user.password = await bcrypt.hash(newPassword, 10);
     await user.save();
 
-    res.json({ message: "Password changed successfully" });
+    res.json({ success: true, message: "Password changed successfully" });
 
   } catch (error) {
     console.log("CHANGE PASSWORD ERROR:", error);
@@ -178,7 +191,7 @@ exports.changePassword = async (req, res) => {
 // =========================
 exports.getAllUsers = async (req, res) => {
   const users = await User.find().select("-password");
-  res.json(users);
+  res.json({ success: true, data: users });
 };
 
 
@@ -193,7 +206,7 @@ exports.deleteUser = async (req, res) => {
   }
 
   await user.deleteOne();
-  res.json({ message: "User removed successfully" });
+  res.json({ success: true, message: "User removed successfully" });
 };
 
 
@@ -212,9 +225,12 @@ exports.updateUserRole = async (req, res) => {
   const updatedUser = await user.save();
 
   res.json({
-    _id: updatedUser._id,
-    name: updatedUser.name,
-    email: updatedUser.email,
-    role: updatedUser.role,
+    success: true,
+    user: {
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      role: updatedUser.role,
+    }
   });
 };
