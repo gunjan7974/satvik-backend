@@ -13,6 +13,10 @@ app.use(helmet({
   crossOriginResourcePolicy: false, // Allow cross-origin images
 })); 
 app.use(cors());
+app.use((req, res, next) => {
+  console.log(`[REQUEST] ${req.method} ${req.url}`);
+  next();
+});
 app.use(mongoSanitize());
 app.use(morgan("dev"));
 

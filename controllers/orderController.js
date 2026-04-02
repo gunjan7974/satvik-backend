@@ -145,10 +145,46 @@ exports.getMyOrders = async (req, res) => {
     });
 
   } catch (error) {
-    console.log("GET MY ORDERS ERROR:", error);
+    console.log("GET MY ORDERS ERROR:", error.message);
     res.status(500).json({ 
       success: false,
       message: "Server Error" 
+    });
+  }
+};
+
+// 🟢 Get Single Order By ID
+exports.getOrderById = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id)
+      .populate("user", "name email phone")
+      .populate("orderItems.food");
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found"
+      });
+    }
+
+    // Security: Only the user who placed the order or an admin can see it
+    if (order.user._id.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to view this order"
+      });
+    }
+
+    res.json({
+      success: true,
+      data: order
+    });
+
+  } catch (error) {
+    console.log("GET ORDER BY ID ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error"
     });
   }
 };

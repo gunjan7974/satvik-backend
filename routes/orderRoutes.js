@@ -6,7 +6,8 @@ const {
   getMyOrders,
   updateOrderStatus,
   getAllOrders,
-  deleteOrder
+  deleteOrder,
+  getOrderById
 } = require("../controllers/orderController");
 
 const { protect, admin } = require("../middleware/authMiddleware");
@@ -16,6 +17,9 @@ router.post("/", protect, createOrder);
 
 // Get My Orders
 router.get("/my", protect, getMyOrders);
+
+// Get Single Order By ID
+router.get("/:id", protect, getOrderById);
 
 // Get All Orders (Admin)
 router.get("/", protect, admin, getAllOrders);
