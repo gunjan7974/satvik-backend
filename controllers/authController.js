@@ -177,7 +177,12 @@ exports.updateProfile = async (req, res) => {
 
     user.name = req.body.name || user.name;
     user.phone = req.body.phone || user.phone;
-    user.avatar = req.body.avatar || user.avatar;
+    
+    if (req.file) {
+      user.avatar = `/uploads/${req.file.filename}`;
+    } else if (req.body.avatar) {
+      user.avatar = req.body.avatar;
+    }
 
     const updatedUser = await user.save();
 
