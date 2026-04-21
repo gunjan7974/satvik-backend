@@ -1,4 +1,7 @@
 const Food = require("../models/Food");
+const Category = require("../models/Category");
+const fs = require("fs");
+const path = require("path");
 
 // Helper function to map Food model to Frontend Menu interface
 const mapFoodToMenu = (food) => {
@@ -124,6 +127,99 @@ exports.addFood = async (req, res, next) => {
     });
   } catch (error) {
     console.error("ADD FOOD ERROR:", error.message);
+    next(error);
+  }
+};
+
+// ✅ POST upload XML foods
+exports.uploadXMLFoods = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "No file uploaded" });
+    }
+
+    console.log("FOOD XML FILE RECEIVED:", req.file);
+    const xmlData = fs.readFileSync(req.file.path, "utf-8");
+    console.log("XML DATA LENGTH:", xmlData.length);
+
+    // Fetch all categories to map names to IDs
+    const categories = await Category.find();
+    const categoryMap = {};
+    categories.forEach(cat => {
+      if (cat.title) {
+        const titleKey = String(cat.title).toLowerCase();
+        categoryMap[titleKey] = cat._id;
+      }
+    });
+
+    // Simple XML parser
+    const parseSimpleXML = (xml) => {
+      const result = [];
+      const itemRegex = /<item>([\s\S]*?)<\/item>/g;
+      let match;
+
+      while ((match = itemRegex.exec(xml)) !== null) {
+        const content = match[1];
+        const item = {};
+        
+        const nameMatch = content.match(/<name>([\s\S]*?)<\/name>/);
+        const titleMatch = content.match(/<title>([\s\S]*?)<\/title>/);
+        const priceMatch = content.match(/<price>([\s\S]*?)<\/price>/);
+        const descMatch = content.match(/<description>([\s\S]*?)<\/description>/);
+        const catMatch = content.match(/<categoryName>([\s\S]*?)<\/categoryName>/);
+        const availableMatch = content.match(/<isAvailable>([\s\S]*?)<\/isAvailable>/);
+
+        item.name = String(nameMatch ? nameMatch[1] : (titleMatch ? titleMatch[1] : "")).trim();
+        item.price = priceMatch ? Number(String(priceMatch[1]).trim()) : 0;
+        item.description = descMatch ? String(descMatch[1]).trim() : "";
+        item.categoryName = catMatch ? String(catMatch[1]).trim() : "";
+        item.isAvailable = availableMatch ? String(availableMatch[1]).trim().toLowerCase() === "true" : true;
+        
+        if (item.name) result.push(item);
+      }
+      return result;
+    };
+
+    const foodsData = parseSimpleXML(xmlData);
+    console.log("PARSED FOODS COUNT:", foodsData.length);
+
+    if (foodsData.length === 0) {
+      return res.status(400).json({ success: false, message: "No valid menu items found in XML" });
+    }
+
+    let insertedCount = 0;
+
+    for (const data of foodsData) {
+      // Map category name to ID
+      let categoryId = "";
+      if (data.categoryName) {
+        const catKey = String(data.categoryName).toLowerCase();
+        categoryId = categoryMap[catKey] || "";
+      }
+
+      await Food.create({
+        name: data.name,
+        price: data.price,
+        description: data.description,
+        category: categoryId ? categoryId.toString() : "",
+        isAvailable: data.isAvailable
+      });
+      insertedCount++;
+    }
+
+    // Clean up uploaded file
+    if (fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Successfully processed XML. Inserted: ${insertedCount}`,
+      data: { inserted: insertedCount }
+    });
+
+  } catch (error) {
+    console.error("XML Upload Error:", error);
     next(error);
   }
 };

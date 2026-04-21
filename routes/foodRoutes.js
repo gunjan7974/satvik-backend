@@ -9,6 +9,7 @@ const {
   addFood,
   updateFood,
   deleteFood,
+  uploadXMLFoods
 } = require("../controllers/foodController");
 
 const { protect, admin } = require("../middleware/authMiddleware");
@@ -30,7 +31,8 @@ const upload = multer({ storage: storage });
 router.get("/", getFoods);
 router.get("/:id", getFoodById);
 
-// Admin Routes - Using upload.single('image') to parse FormData even if no image is sent
+// Admin Routes
+router.post("/upload-xml", protect, admin, upload.single('file'), uploadXMLFoods);
 router.post("/", protect, admin, upload.single('image'), addFood);
 router.put("/:id", protect, admin, upload.single('image'), updateFood);
 router.delete("/:id", protect, admin, deleteFood);
