@@ -10,9 +10,23 @@ const app = express();
 
 // Security Middlewares
 app.use(helmet({
-  crossOriginResourcePolicy: false, // Allow cross-origin images
+  crossOriginResourcePolicy: false,
+  crossOriginEmbedderPolicy: false,
+  contentSecurityPolicy: false,
 })); 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:3000', 
+    'http://127.0.0.1:3000', 
+    'http://localhost:5173', 
+    'http://127.0.0.1:5173',
+    'https://sattvikuser.tsrijanaliitservices.in',
+    ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [])
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use((req, res, next) => {
   console.log(`[REQUEST] ${req.method} ${req.url}`);
   next();
@@ -26,10 +40,10 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Rate Limiting (Prevents Brute Force)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per window
+  max: 1000, // Limit each IP to 1000 requests per window
   message: "Too many requests from this IP, please try again later."
 });
-app.use("/api", limiter);
+// app.use("/api", limiter);
 
 // Payload Limits (Prevents DoS)
 app.use(express.json({ limit: "5mb" }));
